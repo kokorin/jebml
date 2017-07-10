@@ -69,6 +69,7 @@ class MatroskaCluster
     {
       clusterTimecode = frame.getTimecode();
     }
+    lastTimecode = frame.getTimecode();
     frames.add(frame);
     tracks.add(frame.getTrackNo());
   }
@@ -105,14 +106,14 @@ class MatroskaCluster
 
       MatroskaSimpleBlock block = null;
       boolean forceNew = true;
-      long lastTimecode = 0;
+      long prevTimecode = 0;
       int lastTrackNumber = 0;
       LOG.trace("Timecode for cluster set to {}", clusterTimecode);
       for (final MatroskaFileFrame frame : frames)
       {
         frame.setTimecode(frame.getTimecode() - clusterTimecode);
         LOG.trace("Timecode for frame set to {}", frame.getTimecode());
-        if (forceNew || lastTimecode != frame.getTimecode() || lastTrackNumber != frame.getTrackNo())
+        if (forceNew || prevTimecode != frame.getTimecode() || lastTrackNumber != frame.getTrackNo())
         {
           if (block != null)
           {
@@ -120,7 +121,7 @@ class MatroskaCluster
           }
           block = new MatroskaSimpleBlock();
         }
-        lastTimecode = frame.getTimecode();
+        prevTimecode = frame.getTimecode();
         lastTrackNumber = frame.getTrackNo();
         forceNew = !block.addFrame(frame);
       }

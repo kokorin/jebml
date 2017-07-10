@@ -1,5 +1,13 @@
 package org.ebml.matroska;
 
+import static org.junit.Assert.assertEquals;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+
 import org.ebml.EBMLReader;
 import org.ebml.Element;
 import org.ebml.MasterElement;
@@ -13,14 +21,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.charset.StandardCharsets;
-
-import static org.junit.Assert.assertEquals;
 
 public class MatroskaFileWriterTest
 {
@@ -48,7 +48,8 @@ public class MatroskaFileWriterTest
     testTag.addSimpleTag(simpleTag);
   }
 
-  protected FileDataWriter createDataWriter(File destination) throws Exception {
+  protected FileDataWriter createDataWriter(File destination) throws Exception
+  {
     return new FileDataWriter(destination.getPath());
   }
 
