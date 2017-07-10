@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 
 public class MockSource implements DataSource
 {
-
+  @SuppressWarnings("unused")
   private static final Logger LOG = LoggerFactory.getLogger(MockSource.class);
   private final ByteBuffer buffer;
 
