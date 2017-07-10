@@ -1,7 +1,5 @@
 package org.ebml.matroska;
 
-import java.util.Collection;
-
 import org.ebml.Element;
 import org.ebml.MasterElement;
 import org.ebml.UnsignedIntegerElement;
@@ -20,32 +18,22 @@ public class MatroskaFileCues
     this.endOfEbmlHeaderBytePosition = endOfEbmlHeaderBytePosition;
   }
 
-  public void addCue(long positionInFile, long timecodeOfCluster, Collection<Integer> clusterTrackNumbers)
+  public void addCue(long positionInFile, long timecodeOfCluster, int trackNumber)
   {
-    if (!clusterTrackNumbers.isEmpty())
-    {
-      LOG.debug("Adding matroska cue to cues element at position [{}], using timecode [{}], for track numbers [{}]",
-                positionInFile,
-                timecodeOfCluster,
-                clusterTrackNumbers);
+    LOG.debug("Adding matroska cue to cues element at position [{}], using timecode [{}], for track number [{}]",
+              positionInFile,
+              timecodeOfCluster,
+              trackNumber);
 
-      UnsignedIntegerElement cueTime = MatroskaDocTypes.CueTime.getInstance();
-      cueTime.setValue(timecodeOfCluster);
-      MasterElement cuePoint = MatroskaDocTypes.CuePoint.getInstance();
-      cuePoint.addChildElement(cueTime);
-      for (int trackNumber : clusterTrackNumbers)
-      {
-        MasterElement cueTrackPositions = createCueTrackPositions(positionInFile, trackNumber);
-        cuePoint.addChildElement(cueTrackPositions);
-      }
-      cues.addChildElement(cuePoint);
+    UnsignedIntegerElement cueTime = MatroskaDocTypes.CueTime.getInstance();
+    cueTime.setValue(timecodeOfCluster);
+    MasterElement cuePoint = MatroskaDocTypes.CuePoint.getInstance();
+    cuePoint.addChildElement(cueTime);
+    MasterElement cueTrackPositions = createCueTrackPositions(positionInFile, trackNumber);
+    cuePoint.addChildElement(cueTrackPositions);
+    cues.addChildElement(cuePoint);
 
-      LOG.debug("Finished adding matroska cue to cues element");
-    }
-    else
-    {
-      LOG.debug("No track numbers specified. Not adding Cue.");
-    }
+    LOG.debug("Finished adding matroska cue to cues element");
   }
 
   private MasterElement createCueTrackPositions(long positionInFile, int trackNumber)

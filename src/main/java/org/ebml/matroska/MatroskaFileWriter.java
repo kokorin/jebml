@@ -19,6 +19,9 @@
  */
 package org.ebml.matroska;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.ebml.MasterElement;
 import org.ebml.StringElement;
 import org.ebml.UnsignedIntegerElement;
@@ -41,8 +44,10 @@ public class MatroskaFileWriter
   private MatroskaSegmentInfo segmentInfoElem = new MatroskaSegmentInfo();
   private MatroskaFileTracks tracks = new MatroskaFileTracks();;
   private MatroskaFileTags tags = new MatroskaFileTags();
-
+  private Set<Integer> videoTrackNumbers = new HashSet<>();
   private boolean initialized = false;
+
+  private boolean onlyAudioTracks;
 
   /**
    * @param outputDataWriter DataWriter to write out to.
@@ -81,10 +86,10 @@ public class MatroskaFileWriter
     tags.writeTags(ioDW);
 
     cluster = new MatroskaCluster();
-    cluster.setLimitParameters(5000, 128 * 1024);
     metaSeek.addIndexedElement(MatroskaDocTypes.Cluster.getType(), ioDW.getFilePointer());
 
     initialized = true;
+    onlyAudioTracks = videoTrackNumbers.isEmpty();
   }
 
   void writeEBMLHeader()
@@ -197,6 +202,10 @@ public class MatroskaFileWriter
       throw new UnsupportedOperationException("DataWriter isn't seekable, can't add track after starting writing");
     }
     tracks.addTrack(track);
+    if (track.getVideo() != null)
+    {
+      videoTrackNumbers.add(track.getTrackNo());
+    }
   }
 
   /**
@@ -240,10 +249,18 @@ public class MatroskaFileWriter
   public void addFrame(final MatroskaFileFrame frame)
   {
     initialize();
-    if (!cluster.addFrame(frame))
+    if ((onlyAudioTracks && cluster.isFlushNeeded())
+        || (frame.isKeyFrame() && videoTrackNumbers.contains(frame.getTrackNo())))
     {
       flush();
+
+      if (ioDW.isSeekable())
+      {
+        final long clusterPos = ioDW.getFilePointer();
+        cueData.addCue(clusterPos, frame.getTimecode(), frame.getTrackNo());
+      }
     }
+    cluster.addFrame(frame);
   }
 
   /**
@@ -252,12 +269,6 @@ public class MatroskaFileWriter
   public void flush()
   {
     initialize();
-
-    if (ioDW.isSeekable())
-    {
-      final long clusterPos = ioDW.getFilePointer();
-      cueData.addCue(clusterPos, cluster.getClusterTimecode(), cluster.getTracks());
-    }
 
     LOG.debug("Cluster flushing, timecode {}", cluster.getClusterTimecode());
     cluster.flush(ioDW);
