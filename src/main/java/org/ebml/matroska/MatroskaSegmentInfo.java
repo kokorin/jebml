@@ -19,15 +19,11 @@ public class MatroskaSegmentInfo
   private long timecodeScale = 1000000;
   private Double duration;
   private Date segmentDate = new Date();
-  private final long myPosition;
-
-  public MatroskaSegmentInfo(final long position)
-  {
-    myPosition = position;
-  }
+  private long myPosition;
 
   public long writeElement(final DataWriter ioDW)
   {
+    myPosition = ioDW.getFilePointer();
     final MasterElement segmentInfoElem = MatroskaDocTypes.Info.getInstance();
 
     final StringElement writingAppElem = MatroskaDocTypes.WritingApp.getInstance();
