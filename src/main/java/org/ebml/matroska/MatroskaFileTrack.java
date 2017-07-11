@@ -2,17 +2,17 @@
  * JEBML - Java library to read/write EBML/Matroska elements.
  * Copyright (C) 2004 Jory Stone <jebml@jory.info>
  * Based on Javatroska (C) 2002 John Cannon <spyder@matroska.org>
- * 
+ *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
  * version 2.1 of the License, or (at your option) any later version.
- * 
+ *
  * This library is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
@@ -114,6 +114,7 @@ public class MatroskaFileTrack
     private short pixelHeight;
     private short displayWidth = 0;
     private short displayHeight = 0;
+    private ByteBuffer colourSpace = null;
 
     public short getPixelWidth()
     {
@@ -153,6 +154,16 @@ public class MatroskaFileTrack
     public void setDisplayHeight(final short displayHeight)
     {
       this.displayHeight = displayHeight;
+    }
+
+    public ByteBuffer getColourSpace()
+    {
+      return colourSpace;
+    }
+
+    public void setColourSpace(ByteBuffer colourSpace)
+    {
+      this.colourSpace = colourSpace;
     }
   }
 
@@ -225,7 +236,7 @@ public class MatroskaFileTrack
 
   /**
    * Converts the Track to String form
-   * 
+   *
    * @return String form of MatroskaFileTrack data
    */
   @Override
@@ -354,6 +365,11 @@ public class MatroskaFileTrack
             level4.readData(ioDS);
             track.video.setDisplayHeight((short) ((UnsignedIntegerElement) level4).getValue());
           }
+          else if (level4.isType(MatroskaDocTypes.ColourSpace.getType()))
+          {
+            level4.readData(ioDS);
+            track.video.setColourSpace(((BinaryElement) level4).getData());
+          }
 
           level4.skipData(ioDS);
           level4 = ((MasterElement) level3).readNextChild(reader);
@@ -480,7 +496,7 @@ public class MatroskaFileTrack
 
     if (!overlayUids.isEmpty())
     {
-      for (final Long overlay: overlayUids)
+      for (final Long overlay : overlayUids)
       {
         final UnsignedIntegerElement trackOverlayElem = MatroskaDocTypes.TrackOverlay.getInstance();
         trackOverlayElem.setValue(overlay);
@@ -505,10 +521,21 @@ public class MatroskaFileTrack
       final UnsignedIntegerElement trackVideoDisplayHeightElem = MatroskaDocTypes.DisplayHeight.getInstance();
       trackVideoDisplayHeightElem.setValue(this.video.getDisplayHeight());
 
+      BinaryElement colourSpaceElem = null;
+      if (this.video.getColourSpace() != null)
+      {
+        colourSpaceElem = MatroskaDocTypes.ColourSpace.getInstance();
+        colourSpaceElem.setData(this.video.getColourSpace());
+      }
+
       trackVideoElem.addChildElement(trackVideoPixelWidthElem);
       trackVideoElem.addChildElement(trackVideoPixelHeightElem);
       trackVideoElem.addChildElement(trackVideoDisplayWidthElem);
       trackVideoElem.addChildElement(trackVideoDisplayHeightElem);
+      if (colourSpaceElem != null)
+      {
+        trackVideoElem.addChildElement(colourSpaceElem);
+      }
 
       trackEntryElem.addChildElement(trackVideoElem);
     }
@@ -539,7 +566,7 @@ public class MatroskaFileTrack
     {
       final MasterElement trackOpElem = MatroskaDocTypes.TrackOperation.getInstance();
       final MasterElement trackJoinElem = MatroskaDocTypes.TrackJoinBlocks.getInstance();
-      for (final Long uid: operation.joinUIDs)
+      for (final Long uid : operation.joinUIDs)
       {
         final UnsignedIntegerElement joinUidElem = MatroskaDocTypes.TrackJoinUID.getInstance();
         joinUidElem.setValue(uid);

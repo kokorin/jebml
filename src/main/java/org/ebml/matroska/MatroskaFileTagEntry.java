@@ -24,7 +24,9 @@ import java.util.List;
 
 import org.ebml.Element;
 import org.ebml.MasterElement;
+import org.ebml.StringElement;
 import org.ebml.UTF8StringElement;
+import org.ebml.UnsignedIntegerElement;
 
 public class MatroskaFileTagEntry
 {
@@ -44,19 +46,29 @@ public class MatroskaFileTagEntry
 
     MasterElement targetsEntryElem = MatroskaDocTypes.Targets.getInstance();
     tagEntryElem.addChildElement(targetsEntryElem);
-    
+
     for (MatroskaFileSimpleTag simpleTag : simpleTags)
     {
       MasterElement simpleTagEntryElem = MatroskaDocTypes.SimpleTag.getInstance();
 
       UTF8StringElement simpleTagNameElem = MatroskaDocTypes.TagName.getInstance();
       simpleTagNameElem.setValue(simpleTag.getName());
-
-      UTF8StringElement simpleTagStringElem = MatroskaDocTypes.TagString.getInstance();
-      simpleTagStringElem.setValue(simpleTag.getValue());
-
       simpleTagEntryElem.addChildElement(simpleTagNameElem);
-      simpleTagEntryElem.addChildElement(simpleTagStringElem);
+
+      if (simpleTag.getValue() != null)
+      {
+        UTF8StringElement simpleTagStringElem = MatroskaDocTypes.TagString.getInstance();
+        simpleTagStringElem.setValue(simpleTag.getValue());
+        simpleTagEntryElem.addChildElement(simpleTagStringElem);
+      }
+
+      StringElement lang = MatroskaDocTypes.TagLanguage.getInstance();
+      lang.setValue("eng");
+      simpleTagEntryElem.addChildElement(lang);
+
+      UnsignedIntegerElement tagDefault = MatroskaDocTypes.TagDefault.getInstance();
+      tagDefault.setValue(1);
+      simpleTagEntryElem.addChildElement(tagDefault);
 
       tagEntryElem.addChildElement(simpleTagEntryElem);
     }

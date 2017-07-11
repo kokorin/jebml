@@ -14,12 +14,7 @@ public class MatroskaFileTags
 
   private final ArrayList<MatroskaFileTagEntry> tags = new ArrayList<>();
 
-  private final long myPosition;
-
-  public MatroskaFileTags(final long position)
-  {
-    myPosition = position;
-  }
+  private long myPosition;
 
   public void addTag(final MatroskaFileTagEntry tag)
   {
@@ -28,16 +23,20 @@ public class MatroskaFileTags
 
   public long writeTags(final DataWriter ioDW)
   {
+    myPosition = ioDW.getFilePointer();
     final MasterElement tagsElem = MatroskaDocTypes.Tags.getInstance();
 
-    for (final MatroskaFileTagEntry tag: tags)
+    for (final MatroskaFileTagEntry tag : tags)
     {
       tagsElem.addChildElement(tag.toElement());
     }
-    tagsElem.writeElement(ioDW);
-    assert BLOCK_SIZE > tagsElem.getTotalSize();
-    new VoidElement(BLOCK_SIZE - tagsElem.getTotalSize()).writeElement(ioDW);
-    return BLOCK_SIZE;
+    long len = tagsElem.writeElement(ioDW);
+    if (ioDW.isSeekable())
+    {
+      new VoidElement(BLOCK_SIZE - tagsElem.getTotalSize()).writeElement(ioDW);
+      return BLOCK_SIZE;
+    }
+    return len;
   }
 
   public void update(final DataWriter ioDW)

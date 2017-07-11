@@ -14,12 +14,7 @@ public class MatroskaFileTracks
 
   private final ArrayList<MatroskaFileTrack> tracks = new ArrayList<>();
 
-  private final long myPosition;
-
-  public MatroskaFileTracks(final long position)
-  {
-    myPosition = position;
-  }
+  private long myPosition;
 
   public void addTrack(final MatroskaFileTrack track)
   {
@@ -28,9 +23,10 @@ public class MatroskaFileTracks
 
   public long writeTracks(final DataWriter ioDW)
   {
+    myPosition = ioDW.getFilePointer();
     final MasterElement tracksElem = MatroskaDocTypes.Tracks.getInstance();
 
-    for (final MatroskaFileTrack track: tracks)
+    for (final MatroskaFileTrack track : tracks)
     {
       tracksElem.addChildElement(track.toElement());
     }
