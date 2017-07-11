@@ -6,7 +6,7 @@
 
     <groupId>com.github.kokorin</groupId>
     <artifactId>jebml</artifactId>
-    <version>2.2</version>
+    <version>2.3</version>
     <packaging>jar</packaging>
 
     <name>jebml</name>
@@ -49,6 +49,12 @@
             <email>slhomme@matroska.org</email>
             <url>https://github.com/robUx4</url>
         </developer>
+        <developer>
+            <name>Denis Kokorin</name>
+            <email>kokorin86@gmail.com</email>
+            <url>https://github.com/kokorin</url>
+        </developer>
+
     </developers>
     <scm>
         <connection>scm:git:git://github.com/kokorin/jebml.git</connection>
