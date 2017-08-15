@@ -54,6 +54,8 @@ public class MatroskaFile
   private final DataSource ioDS;
   private final EBMLReader reader;
   private Element level0 = null;
+  // Level1 is required fo lazy reading of frames
+  private Element level1 = null;
   private String segmentTitle;
   private Date segmentDate;
   private String muxingApp;
@@ -315,8 +317,12 @@ public class MatroskaFile
 
     synchronized (level0)
     {
-      Element level1 = ((MasterElement) level0).readNextChild(reader);
-      while (level1 != null)
+      if (level1 == null)
+      {
+        level1 = ((MasterElement) level0).readNextChild(reader);
+      }
+
+      while (frameQueue.isEmpty() && level1 != null)
       {
         if (level1.isType(MatroskaDocTypes.Cluster.getType()))
         {
